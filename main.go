@@ -1,27 +1,29 @@
 package main
 
-import (
-	"fmt"
-	"strings"
-)
+import "fmt"
 
 const conferenceTickets = 50
 
 var conferenceName = "Freedom Conference"
 var remainingTickets uint = 50
-var bookings = []string{}
+var bookings = make([]UserData, 0)
+
+type UserData struct {
+	firstName    string
+	lastName     string
+	email        string
+	numOfTickets uint
+}
 
 func main() {
 
 	greetUsers()
 
-	var bookings []string
-
 	for remainingTickets > 0 && len(bookings) < 50 {
 
 		firstName, lastName, email, userTickets := getUserInput()
 
-		isValidName, isValidEmail, isValidTicketNumber := validateUserInput(firstName, lastName, email, userTickets)
+		isValidName, isValidEmail, isValidTicketNumber := validateUserInput(firstName, lastName, email, userTickets, remainingTickets)
 
 		if isValidName && isValidEmail && isValidTicketNumber {
 			bookTickets(userTickets, firstName, lastName, email)
@@ -51,22 +53,14 @@ func greetUsers() {
 	fmt.Printf("We have a total of %v tickets, with %v still available\n", conferenceTickets, remainingTickets)
 	fmt.Println("Get your tickets to attend")
 }
-func getFirstNames(bookings []string) []string {
+func getFirstNames(bookings []UserData) []string {
 	firstNames := []string{}
 
 	for _, booking := range bookings {
-		names := strings.Fields(booking)
-		firstNames = append(firstNames, names[0])
+		firstNames = append(firstNames, booking.firstName)
 	}
 
 	return firstNames
-}
-
-func validateUserInput(firstName, lastName, email string, userTickets uint) (bool, bool, bool) {
-	isValidName := len(firstName) >= 2 && len(lastName) >= 2
-	isValidEmail := strings.Contains(email, "@")
-	isValidTicketNumber := userTickets > 0 && userTickets < remainingTickets
-	return isValidName, isValidEmail, isValidTicketNumber
 }
 
 func getUserInput() (string, string, string, uint) {
@@ -92,7 +86,15 @@ func getUserInput() (string, string, string, uint) {
 
 func bookTickets(userTickets uint, firstName, lastName, email string) {
 	remainingTickets = remainingTickets - userTickets
-	bookings = append(bookings, firstName+" "+lastName)
+
+	var userData = UserData{
+		firstName:    firstName,
+		lastName:     lastName,
+		email:        email,
+		numOfTickets: userTickets,
+	}
+
+	bookings = append(bookings, userData)
 
 	fmt.Printf("Thank you %v %v for booking %v tickets. You will receive a confirmation email at %v\n", firstName, lastName, userTickets, email)
 	fmt.Printf("%v tickets remaining\n", remainingTickets)
